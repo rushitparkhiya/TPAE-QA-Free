@@ -1,23 +1,38 @@
 {
   "name": "tpae-qa-free",
-  "version": "1.0.0",
-  "description": "QA test suite for The Plus Addons for Elementor (Free) — Playwright E2E tests",
+  "version": "2.0.0",
+  "description": "Unified QA suite for TPAE Free — Playwright E2E widget tests + Orbit WP plugin audits",
   "type": "module",
   "scripts": {
-    "test": "playwright test",
-    "test:ui": "playwright test --ui",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
-    "test:widgets": "playwright test tests/e2e/specs/widgets/",
-    "test:ajax": "playwright test tests/e2e/specs/ajax/",
-    "test:chromium": "playwright test --project=chromium",
-    "test:firefox": "playwright test --project=firefox",
-    "test:mobile": "playwright test --project=mobile-chrome",
-    "test:report": "playwright show-report",
-    "test:codegen": "playwright codegen"
+    "qa":              "bash run-qa.sh",
+    "qa:audit":        "bash run-qa.sh --only audit",
+    "qa:e2e":          "bash run-qa.sh --only e2e",
+    "qa:report":       "bash run-qa.sh --only report",
+
+    "test":            "playwright test",
+    "test:tpae":       "playwright test --project=tpae-chromium --project=tpae-ajax",
+    "test:tpae:mobile":"playwright test --project=tpae-mobile",
+    "test:tpae:firefox":"playwright test --project=tpae-firefox",
+    "test:orbit":      "playwright test --project=orbit-flows --project=orbit-elementor",
+    "test:orbit:visual":"playwright test --project=orbit-visual",
+    "test:orbit:pm":   "playwright test --project=orbit-pm",
+    "test:orbit:perf": "playwright test --project=orbit-perf",
+
+    "test:widgets":    "playwright test tests/e2e/specs/widgets/",
+    "test:ajax":       "playwright test tests/e2e/specs/ajax/",
+    "test:flows":      "playwright test orbit/tests/playwright/flows/",
+
+    "test:headed":     "playwright test --headed",
+    "test:debug":      "playwright test --debug",
+    "test:ui":         "playwright test --ui",
+
+    "report":          "playwright show-report reports/html",
+    "codegen":         "playwright codegen"
   },
   "devDependencies": {
     "@playwright/test": "^1.44.0",
+    "@axe-core/playwright": "^4.9.1",
+    "@wp-playground/cli": "^0.9.0",
     "dotenv": "^16.4.5"
   }
 }

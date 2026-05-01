@@ -1,19 +1,24 @@
-name: Playwright E2E Tests
+name: TPAE + Orbit Unified QA
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, master, develop]
   pull_request:
-    branches: [main]
+    branches: [main, master]
 
 jobs:
-  test:
-    name: E2E — ${{ matrix.project }}
+  qa:
+    name: QA — ${{ matrix.project }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        project: [chromium, firefox, mobile-chrome]
+        project:
+          - tpae-chromium
+          - tpae-mobile
+          - tpae-ajax
+          - orbit-flows
+          - orbit-elementor
 
     steps:
       - name: Checkout
@@ -29,25 +34,29 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps ${{ matrix.project == 'mobile-chrome' && 'chromium' || matrix.project }}
+        run: |
+          BROWSER=chromium
+          [[ "${{ matrix.project }}" == *"firefox"* ]] && BROWSER=firefox
+          npx playwright install --with-deps $BROWSER
 
       - name: Run Playwright tests
         run: npx playwright test --project=${{ matrix.project }}
         env:
-          WP_BASE_URL: ${{ secrets.WP_BASE_URL }}
-          WP_ADMIN_USER: ${{ secrets.WP_ADMIN_USER }}
-          WP_ADMIN_PASS: ${{ secrets.WP_ADMIN_PASS }}
-          WP_HEADING_PAGE_SLUG: ${{ vars.WP_HEADING_PAGE_SLUG || '/tpae-test-heading/' }}
-          WP_ACCORDION_PAGE_SLUG: ${{ vars.WP_ACCORDION_PAGE_SLUG || '/tpae-test-accordion/' }}
-          WP_BLOG_PAGE_SLUG: ${{ vars.WP_BLOG_PAGE_SLUG || '/tpae-test-blog-listout/' }}
-          WP_FORM_PAGE_SLUG: ${{ vars.WP_FORM_PAGE_SLUG || '/tpae-test-plus-form/' }}
-          WP_COUNTDOWN_PAGE_SLUG: ${{ vars.WP_COUNTDOWN_PAGE_SLUG || '/tpae-test-countdown/' }}
-          WP_COUNTER_PAGE_SLUG: ${{ vars.WP_COUNTER_PAGE_SLUG || '/tpae-test-number-counter/' }}
-          WP_FLIPBOX_PAGE_SLUG: ${{ vars.WP_FLIPBOX_PAGE_SLUG || '/tpae-test-flip-box/' }}
-          WP_NAV_PAGE_SLUG: ${{ vars.WP_NAV_PAGE_SLUG || '/tpae-test-navigation-menu/' }}
-          WP_VIDEO_PAGE_SLUG: ${{ vars.WP_VIDEO_PAGE_SLUG || '/tpae-test-video/' }}
-          WP_TABS_PAGE_SLUG: ${{ vars.WP_TABS_PAGE_SLUG || '/tpae-test-tabs-tours/' }}
-          WP_COUNTER_TARGET: ${{ vars.WP_COUNTER_TARGET || '100' }}
+          WP_BASE_URL:           ${{ secrets.WP_BASE_URL }}
+          WP_TEST_URL:           ${{ secrets.WP_BASE_URL }}
+          WP_ADMIN_USER:         ${{ secrets.WP_ADMIN_USER }}
+          WP_ADMIN_PASS:         ${{ secrets.WP_ADMIN_PASS }}
+          WP_HEADING_PAGE_SLUG:  ${{ vars.WP_HEADING_PAGE_SLUG   || '/tpae-test-heading/' }}
+          WP_ACCORDION_PAGE_SLUG:${{ vars.WP_ACCORDION_PAGE_SLUG || '/tpae-test-accordion/' }}
+          WP_BLOG_PAGE_SLUG:     ${{ vars.WP_BLOG_PAGE_SLUG      || '/tpae-test-blog-listout/' }}
+          WP_FORM_PAGE_SLUG:     ${{ vars.WP_FORM_PAGE_SLUG      || '/tpae-test-plus-form/' }}
+          WP_COUNTDOWN_PAGE_SLUG:${{ vars.WP_COUNTDOWN_PAGE_SLUG || '/tpae-test-countdown/' }}
+          WP_COUNTER_PAGE_SLUG:  ${{ vars.WP_COUNTER_PAGE_SLUG   || '/tpae-test-number-counter/' }}
+          WP_FLIPBOX_PAGE_SLUG:  ${{ vars.WP_FLIPBOX_PAGE_SLUG   || '/tpae-test-flip-box/' }}
+          WP_NAV_PAGE_SLUG:      ${{ vars.WP_NAV_PAGE_SLUG       || '/tpae-test-navigation-menu/' }}
+          WP_VIDEO_PAGE_SLUG:    ${{ vars.WP_VIDEO_PAGE_SLUG     || '/tpae-test-video/' }}
+          WP_TABS_PAGE_SLUG:     ${{ vars.WP_TABS_PAGE_SLUG      || '/tpae-test-tabs-tours/' }}
+          WP_COUNTER_TARGET:     ${{ vars.WP_COUNTER_TARGET       || '100' }}
           CI: true
 
       - name: Upload Playwright report
@@ -55,5 +64,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.project }}
-          path: playwright-report/
+          path: reports/html/
+          retention-days: 14
+
+      - name: Upload QA summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-summary-${{ matrix.project }}
+          path: reports/qa-summary-*.md
           retention-days: 14
