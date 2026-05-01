@@ -1,0 +1,35 @@
+{
+  "_comment": "Copy this file to {your-plugin-slug}.setup.json and fill in the values.",
+
+  "name": "Your Plugin Display Name",
+  "slug": "your-plugin-slug",
+  "goal": "One-line description of what state this setup puts the plugin in",
+
+  "options": {
+    "_comment": "WP options to set via wp option update. Key = option name, value = value.",
+    "example_option_key": "example_value"
+  },
+
+  "cli_commands": [
+    "_comment: WP-CLI commands to run (without 'wp' prefix). 'rewrite flush --hard' is almost always needed.",
+    "rewrite flush --hard"
+  ],
+
+  "sample_content": [
+    {
+      "_comment": "Add posts/pages to create realistic test content.",
+      "type": "post",
+      "title": "UAT Test Post — Plugin Name",
+      "slug": "uat-plugin-test",
+      "post_type": "post",
+      "content": "Sample post body for UAT testing."
+    },
+    {
+      "type": "post",
+      "title": "UAT About Page — Plugin Name",
+      "slug": "uat-plugin-about",
+      "post_type": "page",
+      "content": "Sample page body for UAT testing."
+    }
+  ]
+}

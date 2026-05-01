@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# Orbit — git pre-commit hook
+#
+# Runs fast checks on staged PHP/JS files before every commit.
+# Install: bash scripts/install-pre-commit-hook.sh
+#
+# Philosophy: only run checks that finish in <10s. Heavy stuff (gauntlet,
+# Playwright) runs in CI. This is the "catch obvious stuff before pushing"
+# gate.
+
+set -e
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+
+STAGED_PHP=$(git diff --cached --name-only --diff-filter=ACM | grep '\.php$' || true)
+STAGED_JS=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|ts|jsx|tsx)$' || true)
+STAGED_JSON=$(git diff --cached --name-only --diff-filter=ACM | grep '\.json$' || true)
+
+FAIL=0
+
+# 1. PHP lint on staged files
+if [ -n "$STAGED_PHP" ] && command -v php &>/dev/null; then
+  echo "→ PHP lint"
+  while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    if ! php -l "$f" > /dev/null 2>&1; then
+      echo -e "${RED}✗ PHP syntax error in $f${NC}"
+      php -l "$f"
+      FAIL=1
+    fi
+  done <<< "$STAGED_PHP"
+fi
+
+# 2. JSON validity
+if [ -n "$STAGED_JSON" ]; then
+  echo "→ JSON validation"
+  while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    if ! python3 -m json.tool "$f" > /dev/null 2>&1; then
+      echo -e "${RED}✗ Invalid JSON in $f${NC}"
+      FAIL=1
+    fi
+  done <<< "$STAGED_JSON"
+fi
+
+# 3. Check for debug / scratch patterns that should never be committed
+if [ -n "$STAGED_PHP" ] || [ -n "$STAGED_JS" ]; then
+  echo "→ Scratch / debug check"
+  DBG_PATTERNS='var_dump\(|die\(.?[\"'\'']|console\.log\(.*DEBUG|debugger;|TODO-ORBIT|FIXME-ORBIT'
+  HITS=$(git diff --cached | grep -E "^\+" | grep -vE "^\+\+\+" | grep -cE "$DBG_PATTERNS" || true)
+  if [ "$HITS" -gt 0 ]; then
+    echo -e "${YELLOW}⚠ Added $HITS lines with debug/scratch patterns (var_dump, console.log DEBUG, debugger, TODO-ORBIT).${NC}"
+    echo "  Review with: git diff --cached | grep -E '${DBG_PATTERNS}'"
+  fi
+fi
+
+# 4. No .env or credential-looking files
+SECRETS=$(git diff --cached --name-only --diff-filter=A | grep -E '\.env$|credentials\.(json|yaml|yml)$|\.pem$|id_rsa$' || true)
+if [ -n "$SECRETS" ]; then
+  echo -e "${RED}✗ Committing credential-looking files:${NC}"
+  echo "$SECRETS"
+  echo "  Use git rm --cached to unstage, then add to .gitignore"
+  FAIL=1
+fi
+
+# 5. block.json apiVersion if any are staged
+STAGED_BLOCKJSON=$(echo "$STAGED_JSON" | grep 'block\.json$' || true)
+if [ -n "$STAGED_BLOCKJSON" ]; then
+  echo "→ block.json apiVersion"
+  while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    API_VER=$(python3 -c "import json; print(json.load(open('$f')).get('apiVersion',''))" 2>/dev/null || echo "")
+    if [ "$API_VER" != "3" ]; then
+      echo -e "${YELLOW}⚠ $f apiVersion is '$API_VER' (should be 3 for WP 6.3+)${NC}"
+    fi
+  done <<< "$STAGED_BLOCKJSON"
+fi
+
+if [ "$FAIL" -eq 1 ]; then
+  echo ""
+  echo -e "${RED}✗ pre-commit failed. Fix errors above or 'git commit --no-verify' to bypass.${NC}"
+  exit 1
+fi
+
+echo -e "${GREEN}✓ pre-commit passed${NC}"
+exit 0

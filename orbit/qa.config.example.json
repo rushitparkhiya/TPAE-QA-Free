@@ -1,0 +1,58 @@
+{
+  "_comment": "Copy to qa.config.json and fill in your plugin details. qa.config.json is gitignored.",
+
+  "plugin": {
+    "name": "Your Plugin Name",
+    "slug": "your-plugin-slug",
+    "type": "general",
+    "path": "/path/to/your/plugin",
+    "version": "1.0.0",
+    "hasPro": false,
+    "proZip": "",
+    "textDomain": "your-plugin-slug",
+    "requiresAtLeast": "5.0",
+    "testedUpTo": "6.9",
+    "requiresPHP": "7.4"
+  },
+
+  "environment": {
+    "testUrl": "http://localhost:8881",
+    "wpEnvPort": 8881,
+    "adminUser": "admin",
+    "adminPass": "password",
+    "multisite": false,
+    "stagingUrl": ""
+  },
+
+  "companions": [
+    "_comment: WP.org slugs of plugins that should be active during testing",
+    "woocommerce"
+  ],
+
+  "upgrade": {
+    "test": false,
+    "fromVersion": ""
+  },
+
+  "competitors": [
+    "_comment: WP.org slugs of plugins to compare against in flow tests",
+    "plugin-b-slug"
+  ],
+
+  "qaFocus": {
+    "priority": "full",
+    "testAreas": [
+      "activation",
+      "admin-panel-load",
+      "frontend-output",
+      "rest-api-auth"
+    ]
+  },
+
+  "thresholds": {
+    "lighthouse": { "performance": 75, "accessibility": 85 },
+    "dbQueriesPerPage": 60,
+    "jsBundleKb": 500,
+    "cssBundleKb": 200
+  }
+}
