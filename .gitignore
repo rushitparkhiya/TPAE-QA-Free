@@ -1,0 +1,10 @@
+node_modules/
+playwright-report/
+test-results/
+.auth/
+.env
+*.local
+
+# OS
+.DS_Store
+Thumbs.db

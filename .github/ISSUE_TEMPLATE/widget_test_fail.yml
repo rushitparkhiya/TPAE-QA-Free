@@ -1,0 +1,51 @@
+name: Widget Test Failure
+description: Report a failing automated test case
+title: "[Test Fail] "
+labels: [test-failure, needs-triage]
+body:
+  - type: input
+    id: test_id
+    attributes:
+      label: Test Case ID
+      description: The test case ID from the spec file (e.g. FB-02, NC-03)
+      placeholder: e.g. FB-02
+    validations:
+      required: true
+
+  - type: input
+    id: spec_file
+    attributes:
+      label: Spec File
+      description: Path to the spec file
+      placeholder: e.g. tests/e2e/specs/widgets/flip-box.spec.js
+    validations:
+      required: true
+
+  - type: textarea
+    id: failure_message
+    attributes:
+      label: Failure Message
+      description: Paste the full Playwright error/failure message.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: TPAE version, WP version, Elementor version, browser, OS.
+      placeholder: |
+        TPAE: 6.4.14
+        Elementor: 3.22.0
+        WP: 6.5.0
+        Browser: chromium
+        OS: Ubuntu 22.04
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Any context that might help diagnose the failure.
