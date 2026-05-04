@@ -4,10 +4,13 @@
   "description": "Unified QA suite for TPAE Free — Playwright E2E widget tests + Orbit WP plugin audits",
   "type": "module",
   "scripts": {
-    "qa":              "bash run-qa.sh",
-    "qa:audit":        "bash run-qa.sh --only audit",
-    "qa:e2e":          "bash run-qa.sh --only e2e",
-    "qa:report":       "bash run-qa.sh --only report",
+    "qa":                 "bash run-qa.sh",
+    "qa:audit":           "bash run-qa.sh --only audit",
+    "qa:e2e":             "bash run-qa.sh --only e2e",
+    "qa:report":          "bash run-qa.sh --only report",
+
+    "prerelease":         "bash run-prerelease.sh",
+    "prerelease:quick":   "bash run-prerelease.sh --quick",
 
     "test":            "playwright test",
     "test:tpae":       "playwright test --project=tpae-chromium --project=tpae-ajax",
